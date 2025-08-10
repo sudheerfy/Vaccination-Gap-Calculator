@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vaccination Gap Calculator</title>
+  <meta name="description" content="Easily calculate your child's next vaccine due date and ensure the correct interval between doses. Simple date add/subtract tool in Hindi." />
+  <meta name="keywords" content="vaccination calculator, vaccine gap calculator, due date calculator, immunization schedule, child vaccination tool, date calculator, add subtract dates, vaccine interval tool, vaccination planner, pediatric immunization tracker" />
+  <meta name="author" content="Sudheer Singh" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+  <!-- jQuery + jQuery UI -->
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+  <style>
+    body {
+      font-family: "Noto Sans", "Segoe UI", sans-serif;
+      font-weight: 400;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background-color: #f5f5f5;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+    .card {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+    }
+    .ribbon-wrapper {
+      width: 100px;
+      height: 100px;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: transparent;
+      pointer-events: none;
+    }
+    .ribbon-wrapper .ribbon {
+      pointer-events: auto;
+      font-weight: bold;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 13px;
+      color: #fff;
+      text-align: center;
+      transform: rotate(-45deg);
+      position: absolute;
+      padding: 10px 0;
+      top: 3px;   
+      left: -50px; 
+      width: 160px;
+      background-color: #ebb134;
+      user-select: none;
+      line-height: 1.2;
+      white-space: normal;
+      word-wrap: break-word;
+      text-decoration: none;
+    }
+    .card h2 {
+      text-align: center;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+    .card p {
+      text-align: center;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 15px;
+      line-height: 1.4;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .label-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      text-align: center;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+    }
+    .date-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+    .date-grid .field {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+    }
+    .date-grid label {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .date-grid input[type="number"],
+    .date-grid input[type="date"],
+    .input-field {
+      padding: 8px;
+      font-size: 15px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .input-field:focus {
+      border-color: #1976d2;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+    }
+    .no-arrows::-webkit-inner-spin-button,
+    .no-arrows::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .no-arrows {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+    .helper {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 12px;
+      color: #777;
+      margin-top: 3px;
+    }
+    #datepicker {
+      display: none;
+    }
+    #calendarIcon {
+      align-self: center;
+      height: 38px;
+      width: 38px;
+      background: none;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    #calendarIcon img {
+      width: 20px;
+      height: 20px;
+    }
+    .today-link {
+      display: inline-block;
+      text-align: center;
+      color: #007bff;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 15px 0;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .switch-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      color: #444;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 15px;
+    }
+    .button-sections {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn-group {
+      flex: 1 1 100%;
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .group-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #444;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 16px;
+      text-align: center;
+    }
+    .btn-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .btn-group button {
+      flex: 1 1 calc(25% - 6px);
+      min-width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      border: none;
+      background: #eee;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-weight: 500;
+      font-size: 16px;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-group button:hover {
+      background: #007bff;
+      color: #fff;
+    }
+    .clear-btn {
+      padding: 6px 14px;
+      background: #ff5f5f;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      min-width: 80px;
+      text-align: center;
+    }
+    .clear-btn:hover {
+      background: #e60000;
+    }
+    #addedDateResult {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      color: green;
+      background: #e6ffed;
+      border: 1px solid #a6e9b7;
+      padding: 8px;
+      border-radius: 6px;
+      min-height: 40px;
+    }
+    .selectable {
+      user-select: text;
+    }
+    #toggleLabel {
+      display: inline-block;
+      min-width: 150px;
+      text-align: left;
+      transition: all 0.3s ease;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+      vertical-align: middle;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 22px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px; 
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #4CAF50;
+    }
+    input:checked + .slider:before {
+      transform: translateX(18px);
+    }
+    /* Shake Animation for Error */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+    .shake { animation: shake 0.5s; border-color: red !important; }
+    /* Mobile Responsive */
+    @media (max-width: 400px) {
+      .date-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-row-gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="ribbon-wrapper">
+      <a href="https://github.com/sudheerfy/Duelist-Date-Calculator/raw/refs/heads/main/Age%20Calculator/com.intreve.agecalculator.apk " download class="ribbon" aria-label="Download">
+        Age<br>Calculator
+      </a>
+    </div>
+    <h2>
+      <!-- reference: https://fonts.google.com/noto/specimen/Noto+Color+Emoji -->
+      <img src="https://images.emojiterra.com/google/noto-emoji/unicode-16.0/color/svg/1f489.svg" alt="syringe" height="40" width="40">
+      Vaccination Gap Calculator
+    </h2>
+    <p>अपने बच्चे के टीकाकरण की ड्यू तिथि आसानी से जानना और हर टीके के बीच का सही अंतराल सुनिश्चित करना</p>
+
+    <div class="label-text">नीचे बच्चे का जन्मदिन या टीकाकरण की तिथि दर्ज करें।</div>
+    <div class="date-grid">
+      <div class="field">
+        <label for="day">दिन</label>
+        <input class="no-arrows input-field" type="number" id="day" min="1" max="31" inputmode="numeric" pattern="\d*">
+        <div class="helper">DD</div>
+      </div>
+      <div class="field">
+        <label for="month">माह</label>
+        <input class="no-arrows input-field" type="number" id="month" min="1" max="12" inputmode="numeric" pattern="\d*">
+        <div class="helper">MM</div>
+      </div>
+      <div class="field">
+        <label for="year">साल</label>
+        <input class="no-arrows input-field" type="number" id="year" min="1900" max="2100" inputmode="numeric" pattern="\d*">
+        <div class="helper">YYYY</div>
+      </div>
+      <input type="text" id="datepicker" readonly>
+      <button type="button" id="calendarIcon" title="Calendar" aria-label="Open calendar">
+        <img src="https://jqueryui.com/resources/demos/datepicker/images/calendar.gif" alt="Calendar">
+      </button>
+    </div>
+    
+    <div class="top-bar">
+      
+      <span class="today-link" id="todayLink">आज की तारीख़</span>
+      <label class="switch-label">
+        Plus / Minus
+        <label class="switch" for="operationToggle">
+          <input type="checkbox" id="operationToggle" checked>
+          <span class="slider"></span>
+        </label>
+        <span id="toggleLabel">आगे की तारीख (जोड़ें)</span>
+      </label>
+    </div>
+
+    <div id="addDaysButtons" class="button-sections">
+
+      <div class="btn-group">
+        <div class="group-title">टीकों के बीच का समय-अंतराल</div>
+        <div class="btn-row">
+          <button type="button" data-type="days" data-value="28" aria-label="28 दिन जोड़ें">4 सप्ताह</button>
+          <button type="button" data-type="days" data-value="56" aria-label="56 दिन जोड़ें">8 सप्ताह</button>
+          <button type="button" data-type="months" data-value="3" aria-label="3 महीने जोड़ें">3 माह</button>
+          <button type="button" data-type="months" data-value="6" aria-label="6 महीने जोड़ें">6 माह</button>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <div class="group-title">बच्चों के लिए टीकाकरण ड्यू शेड्यूल</div>
+        <div class="btn-row">
+          <button type="button" data-type="days" data-value="42" aria-label="42 दिन जोड़ें">42 दिन/6 सप्ताह</button>
+          <button type="button" data-type="days" data-value="270" aria-label="270 दिन जोड़ें">9 माह</button>
+          <button type="button" data-type="days" data-value="480" aria-label="480 दिन जोड़ें">16 माह</button>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <div class="group-title">बच्चों के लिए टीकाकरण ड्यू (वर्ष अनुसार)</div>
+        <div class="btn-row">
+          <button type="button" data-type="years" data-value="5" aria-label="5 साल जोड़ें">5 साल</button>
+          <button type="button" data-type="years" data-value="10" aria-label="10 साल जोड़ें">10 साल</button>
+          <button type="button" data-type="years" data-value="16" aria-label="16 साल जोड़ें">16 साल</button>
+        </div>
+      </div>
+
+      <button type="button" id="clearBtn" class="clear-btn">Clear</button>
+    </div>
+
+    <div id="addedDateResult" class="selectable"></div>
+  </div>
+
+  <script>
+    // Auto-trim and move focus
+    document.querySelectorAll("#day, #month, #year").forEach((input) => {
+      input.addEventListener("input", function () {
+        let val = this.value;
+        let id = this.id;
+
+        if ((id === "day" || id === "month") && val.length > 2) {
+          this.value = val.slice(0, 2);
+        }
+        if (id === "year" && val.length > 4) {
+          this.value = val.slice(0, 4);
+        }
+
+        // Auto-focus to next field
+        if ((id === "day" || id === "month") && this.value.length === 2) {
+          if (id === "day") {
+            document.getElementById("month").focus();
+          } else if (id === "month") {
+            document.getElementById("year").focus();
+          }
+        }
+      });
+    });
+
+    // Reverse focus on backspace if input is empty
+    document.getElementById("month").addEventListener("keydown", function (e) {
+      if (e.key === "Backspace" && this.value.length === 0) {
+        document.getElementById("day").focus();
+      }
+    });
+
+    document.getElementById("year").addEventListener("keydown", function (e) {
+      if (e.key === "Backspace" && this.value.length === 0) {
+        document.getElementById("month").focus();
+      }
+    });
+
+    const utils = {
+      hindiMonths: [
+        "जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून",
+        "जुलाई", "अगस्त", "सितम्बर", "अक्टूबर", "नवम्बर", "दिसम्बर"
+      ],
+      hindiDays: [
+        "रविवार", "सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार"
+      ],
+      addDays(date, days) {
+        const newDate = new Date(date);
+        newDate.setDate(newDate.getDate() + days);
+        return newDate;
+      },
+      addMonths(date, months) {
+        const newDate = new Date(date);
+        newDate.setMonth(newDate.getMonth() + months);
+        return newDate;
+      },
+      addYears(date, years) {
+        const newDate = new Date(date);
+        newDate.setFullYear(newDate.getFullYear() + years);
+        return newDate;
+      },
+      formatDateHindi(date) {
+        const d = date.getDate();
+        const m = utils.hindiMonths[date.getMonth()];
+        const y = date.getFullYear();
+        const dayName = utils.hindiDays[date.getDay()];
+        return `${d} ${m} ${y} (${dayName})`;
+      }
+    };
+
+    // Helper function - Invalid Date Check (31/02/2025 etc.)
+    function isValidDate(day, month, year) {
+      const date = new Date(year, month - 1, day);
+      return (
+        date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day
+      );
+    }
+
+    // DOMContentLoaded के बाहर
+    function syncDatepickerToInputs(dateStr) {
+      const [d, m, y] = dateStr.split('/');
+      document.getElementById('day').value = d.padStart(2, '0');
+      document.getElementById('month').value = m.padStart(2, '0');
+      document.getElementById('year').value = y;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById("day").focus();
+
+      const dayInput = document.getElementById('day');
+      const monthInput = document.getElementById('month');
+      const yearInput = document.getElementById('year');
+      const datepicker = document.getElementById('datepicker');
+      const toggleLabel = document.getElementById('toggleLabel');
+      const operationToggle = document.getElementById('operationToggle');
+      const resultBox = document.getElementById('addedDateResult');
+
+      // Auto-pad और validate inputs
+      [dayInput, monthInput, yearInput].forEach(inp => {
+          inp.addEventListener('blur', () => {
+              if (!inp.value) return;
+
+              if (inp === yearInput) {
+                  // साल 4 अंकों का होना चाहिए
+                  if (inp.value.length !== 4) {
+                      inp.value = '';
+                      resultBox.textContent = "साल 4 अंकों में होना चाहिए (1900-2100)";
+                      inp.classList.add("shake");
+                      setTimeout(() => inp.classList.remove("shake"), 500);
+                      return;
+                  }
+
+                  let yearNum = parseInt(inp.value, 10);
+                  if (yearNum < 1900 || yearNum > 2100) {
+                      inp.value = '';
+                      resultBox.textContent = "साल 1900 से 2100 के बीच होना चाहिए";
+                      inp.classList.add("shake");
+                      setTimeout(() => inp.classList.remove("shake"), 500);
+                  }
+              } else {
+                  // दिन और माह हमेशा 2 digit
+                  if (inp.value.length === 1) {
+                      inp.value = inp.value.padStart(2, '0');
+                  }
+              }
+          });
+      });
+
+      // Inputs → Datepicker
+      function syncInputsToDatepicker() {
+        const { day, month, year } = getParsedDateInputs();
+        if (isNaN(day) || isNaN(month) || isNaN(year)) return;
+        if (!isValidDate(day, month, year)) return;
+
+        const dateObj = new Date(year, month - 1, day);
+        $("#datepicker").datepicker("setDate", dateObj);
+      }
+
+      // Helper to parse inputs
+      function getParsedDateInputs() {
+        return {
+          day: parseInt(dayInput.value, 10),
+          month: parseInt(monthInput.value, 10),
+          year: parseInt(yearInput.value, 10)
+        };
+      }
+
+      // DRY Error handler function
+      function showError(message, highlightEmptyOnly = false) {
+        resultBox.textContent = message;
+        [dayInput, monthInput, yearInput].forEach(inp => {
+          if (!highlightEmptyOnly || !inp.value) {
+            inp.classList.add("shake");
+            setTimeout(() => inp.classList.remove("shake"), 500);
+          }
+        });
+      }
+
+      operationToggle.addEventListener('change', () => {
+        const isAdd = operationToggle.checked;
+
+        // टॉगल टेक्स्ट अपडेट
+        toggleLabel.textContent = isAdd 
+          ? "आगे की तारीख (जोड़ें)" 
+          : "पीछे की तारीख (घटाएँ)";
+
+        // टॉगल खुद का aria-label
+        operationToggle.setAttribute(
+          "aria-label", 
+          isAdd ? "तारीख जोड़ें" : "तारीख घटाएँ"
+        );
+
+        // सभी बटन का aria-label बदलें
+        document.querySelectorAll('.btn-row button').forEach(btn => {
+          const value = btn.dataset.value;
+          let type;
+          switch (btn.dataset.type) {
+            case "days": type = "दिन"; break;
+            case "months": type = "महीने"; break;
+            case "years": type = "साल"; break;
+            default: type = "";
+          }
+          btn.setAttribute(
+            "aria-label",
+            `${value} ${type} ${isAdd ? "जोड़ें" : "घटाएँ"}`
+          );
+        });
+      });
+
+
+      // Set today’s date
+      document.getElementById('todayLink').addEventListener('click', () => {
+        const today = new Date();
+        dayInput.value = String(today.getDate()).padStart(2, '0');
+        monthInput.value = String(today.getMonth() + 1).padStart(2, '0');
+        yearInput.value = today.getFullYear();
+        $("#datepicker").datepicker("setDate", today);
+      });
+
+      // Clear fields
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        [dayInput, monthInput, yearInput].forEach(inp => {
+          inp.value = '';
+          inp.style.borderColor = '';
+        });
+        datepicker.value = '';
+        resultBox.textContent = '';
+        $("#datepicker").datepicker("setDate", null);
+      });
+
+      // Datepicker change → Inputs
+      datepicker.addEventListener('change', () => {
+        if (datepicker.value) {
+          syncDatepickerToInputs(datepicker.value);
+        }
+      });
+
+      // Inputs change → Datepicker
+      [dayInput, monthInput, yearInput].forEach(inp => {
+        inp.addEventListener("input", syncInputsToDatepicker);
+      });
+
+      // Add/Subtract date logic
+      document.querySelectorAll('#addDaysButtons button[data-type]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          let type = btn.dataset.type;
+          let value = parseInt(btn.dataset.value, 10);
+          const op = operationToggle.checked ? "add" : "subtract";
+          if (op === "subtract") value = -value;
+
+          const { day, month, year } = getParsedDateInputs();
+
+          // Reset borders
+          [dayInput, monthInput, yearInput].forEach(inp => inp.style.borderColor = '');
+
+          // Empty field check
+          if (isNaN(day) || isNaN(month) || isNaN(year)) {
+            showError("कृपया सही तिथि दर्ज करें।", true);
+            return;
+          }
+
+          // Invalid date check
+          if (!isValidDate(day, month, year)) {
+            showError("कृपया मान्य तिथि दर्ज करें।");
+            return;
+          }
+
+          const inputDate = new Date(year, month - 1, day);
+          let newDate;
+          if (type === "days") newDate = utils.addDays(inputDate, value);
+          if (type === "months") newDate = utils.addMonths(inputDate, value);
+          if (type === "years") newDate = utils.addYears(inputDate, value);
+
+          const resultText = utils.formatDateHindi(newDate);
+          let label;
+          if (type === "days") label = `${Math.abs(value)} दिन ${op === "add" ? "बाद" : "पहले"} की तिथि:`;
+          if (type === "months") label = `${Math.abs(value)} महीने ${op === "add" ? "बाद" : "पहले"} की तिथि:`;
+          if (type === "years") label = `${Math.abs(value)} साल ${op === "add" ? "बाद" : "पहले"} की तिथि:`;
+
+          resultBox.textContent = `${label} ${resultText}`;
+        });
+      });
+
+      document.addEventListener('click', function (e) {
+        // अगर selection है और user body पर क्लिक करता है
+        if (window.getSelection) {
+          const selection = window.getSelection();
+          if (!e.target.closest('.selectable') && selection.toString().length > 0) {
+            selection.removeAllRanges(); // selection हटाएं
+          }
+        }
+      });
+    });
+
+    // Hindi config for Datepicker
+    $.datepicker.regional['hi'] = {
+      closeText: "बंद",
+      prevText: "पिछला",
+      nextText: "अगला",
+      currentText: "आज",
+      monthNames: [
+        "जनवरी","फ़रवरी","मार्च","अप्रैल","मई","जून",
+        "जुलाई","अगस्त","सितम्बर","अक्टूबर","नवम्बर","दिसम्बर"
+      ],
+      monthNamesShort: [
+        "जन", "फर", "मार्च", "अप्रै", "मई", "जून",
+        "जुल", "अग", "सित", "अक्ट", "नव", "दि"
+      ],
+      dayNames: [
+        "रविवार","सोमवार","मंगलवार","बुधवार","गुरुवार","शुक्रवार","शनिवार"
+      ],
+      dayNamesShort: ["रवि", "सोम", "मंगल", "बुध", "गुरु", "शुक्र", "शनि"],
+      dayNamesMin: ["र","सो","मं","बु","गु","शु","श"],
+      weekHeader: "हफ्ता",
+      dateFormat: "dd/mm/yy",
+      firstDay: 1,
+      isRTL: false,
+      showMonthAfterYear: false,
+      yearSuffix: ""
+    };
+    $.datepicker.setDefaults($.datepicker.regional["hi"]);
+
+    // Datepicker init
+    $(function () {
+      $("#datepicker").datepicker({
+        dateFormat: "dd/mm/yy",
+        minDate: new Date(1900, 0, 1),
+        maxDate: new Date(2100, 11, 31),
+        onSelect: function (dateText) {
+          syncDatepickerToInputs(dateText);
+        }
+      });
+
+      $("#calendarIcon").on("click", function () {
+        $("#datepicker").datepicker("show");
+      });
+    });
+
+  </script>
+</body>
+</html>
