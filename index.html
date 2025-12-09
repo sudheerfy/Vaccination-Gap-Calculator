@@ -6,7 +6,8 @@
   <title>Vaccination Gap Calculator</title>
   <meta name="description" content="Easily calculate your child's next vaccine due date and ensure the correct interval between doses. Simple date add/subtract tool in Hindi." />
   <meta name="keywords" content="vaccination calculator, vaccine gap calculator, due date calculator, immunization schedule, child vaccination tool, date calculator, add subtract dates, vaccine interval tool, vaccination planner, pediatric immunization tracker" />
-  <meta name="author" content="Sudheer Singh" />
+  <meta name="author" content="Sudheer Singh"/>
+  <meta name="publisher" content="Unicef GAVI"/>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -427,7 +428,6 @@
       </a>
     </div>
     <h2>
-      <!-- reference: https://fonts.google.com/noto/specimen/Noto+Color+Emoji -->
       <img src="https://images.emojiterra.com/google/noto-emoji/unicode-16.0/color/svg/1f489.svg" alt="syringe" height="40" width="40">
       Vaccination Gap Calculator
     </h2>
@@ -457,9 +457,9 @@
         </button>
       </div>
     </div>
-    
+
     <div class="top-bar">
-      
+
       <span class="today-link" id="todayLink">आज की तारीख़</span>
       <label class="switch-label">
         Plus / Minus
@@ -736,8 +736,9 @@
         btn.addEventListener('click', () => {
           let type = btn.dataset.type;
           let value = parseInt(btn.dataset.value, 10);
-          const op = operationToggle.checked ? "add" : "subtract";
-          if (op === "subtract") value = -value;
+          const isAddOperation = operationToggle.checked; // true => add, false => subtract
+          const op = isAddOperation ? "add" : "subtract";
+          if (!isAddOperation) value = -value; // negative for subtract
 
           const { day, month, year } = getParsedDateInputs();
 
@@ -758,11 +759,34 @@
 
           const inputDate = new Date(year, month - 1, day);
           let newDate;
-          if (type === "days") newDate = utils.addDays(inputDate, value);
-          if (type === "months") newDate = utils.addMonths(inputDate, value);
-          if (type === "years") newDate = utils.addYears(inputDate, value);
 
+          // Apply requested change (days/months/years)
+          if (type === "days") {
+            newDate = utils.addDays(inputDate, value);
+          } else if (type === "months") {
+            newDate = utils.addMonths(inputDate, value);
+          } else if (type === "years") {
+            newDate = utils.addYears(inputDate, value);
+          } else {
+            showError("अनजान ऑपरेशन।");
+            return;
+          }
+
+
+          // Decide whether to apply the extra +/-1 day:
+          // Skip extra-day adjustment when it's exactly 28 or 56 days (4w/8w)
+          const absValue = Math.abs(parseInt(btn.dataset.value, 10));
+          const skipExtraFor28or56 = (type === 'days' && (absValue === 28 || absValue === 56));
+
+          // let adjustedNote = '';
+          if (!skipExtraFor28or56) {
+            const adjustSign = isAddOperation ? 1 : -1;
+            newDate = utils.addDays(newDate, adjustSign * 1); // apply extra day
+            // adjustedNote = ' (1 दिन समायोजित)';
+          }
+          
           const resultText = utils.formatDateHindi(newDate);
+
           let label;
           if (type === "days") label = `${Math.abs(value)} दिन ${op === "add" ? "बाद" : "पहले"} की तिथि:`;
           if (type === "months") label = `${Math.abs(value)} महीने ${op === "add" ? "बाद" : "पहले"} की तिथि:`;
